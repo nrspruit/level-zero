@@ -344,4 +344,49 @@ TEST(
   EXPECT_GT(pDriverGetCount, 0);
 }
 
+#ifdef DYNAMIC_LOAD_LOADER
+TEST(
+  LoaderTearDown,
+  GivenLoaderStabilityCheckFailsWhenCallingzelCheckIsLoaderInTearDownThenTrueIsReturned) {
+
+  // Simulate a failure in the stability check
+  auto originalLoaderDriverGet = ze_lib::context->loaderDriverGet;
+  ze_lib::context->loaderDriverGet = nullptr; // Simulate invalid function pointer
+
+  EXPECT_TRUE(zelCheckIsLoaderInTearDown());
+
+  // Restore original loaderDriverGet
+  ze_lib::context->loaderDriverGet = originalLoaderDriverGet;
+}
+
+TEST(
+  LoaderTearDown,
+  GivenLoaderStabilityCheckFailsWhenCallingzelCheckIsLoaderInTearDownWithInvalidPointerThenTrueIsReturned) {
+
+  // Simulate a failure in the stability check
+  auto originalLoaderDriverGet = ze_lib::context->loaderDriverGet;
+  ze_lib::context->loaderDriverGet = 0x1234; // Simulate invalid function pointer
+
+  EXPECT_TRUE(zelCheckIsLoaderInTearDown());
+
+  // Restore original loaderDriverGet
+  ze_lib::context->loaderDriverGet = originalLoaderDriverGet;
+}
+
+TEST(
+  LoaderTearDown,
+  GivenLoaderStabilityCheckSucceedsWhenCallingzelCheckIsLoaderInTearDownThenFalseIsReturned) {
+
+  // Ensure loaderDriverGet is valid
+  EXPECT_FALSE(zelCheckIsLoaderInTearDown());
+}
+#endif
+
+TEST(
+  LoaderTearDown,
+  GivenLoaderNotInDestructionStateWhenCallingzelCheckIsLoaderInTearDownThenFalseIsReturned) {
+
+  EXPECT_FALSE(zelCheckIsLoaderInTearDown());
+}
+
 } // namespace
