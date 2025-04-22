@@ -105,6 +105,7 @@ namespace ze_lib
         for (auto &component : versions) {
             if (loader_name == component.component_name) {
                 version = component.spec_version;
+                this->dynamicLoaderVersion = component.component_lib_version;
                 std::string message = "ze_lib Context Init() Static Loader Found Loader Version v" + std::to_string(component.component_lib_version.major) + "." + std::to_string(component.component_lib_version.minor) + "." + std::to_string(component.component_lib_version.patch);
                 debug_trace_message(message, "");
                 if(component.component_lib_version.major == 1) {
@@ -339,6 +340,8 @@ namespace ze_lib
         if (!delayContextDestruction) {
             std::atexit(context_at_exit_destructor);
         }
+        #elif defined(_WIN32)
+        std::atexit(context_dynamic_at_exit_destructor);
         #endif
         return result;
     }
@@ -490,6 +493,17 @@ zelCheckIsLoaderInTearDown() {
         return true;
     }
     #if defined(DYNAMIC_LOAD_LOADER) && defined(_WIN32)
+    if (ze_lib::context->dynamicLoaderVersion.major > 1 ||
+        (ze_lib::context->dynamicLoaderVersion.major == 1 &&
+         (ze_lib::context->dynamicLoaderVersion.minor > 21 ||
+          (ze_lib::context->dynamicLoaderVersion.minor == 21 &&
+           ze_lib::context->dynamicLoaderVersion.patch >= 10)))) {
+            if (ze_lib::context->debugTraceEnabled) {
+                std::string message = "Loader stability check is not needed for this version.";
+                ze_lib::context->debug_trace_message(message, "");
+            }
+        return false;
+    }
     std::promise<int> stabilityPromise;
     std::future<int> resultFuture = stabilityPromise.get_future();
     int result = -1;

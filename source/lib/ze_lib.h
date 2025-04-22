@@ -23,6 +23,7 @@
 #include <atomic>
 #include <typeinfo>
 #include <iostream>
+#include "../loader/ze_loader_api.h"
 
 namespace ze_lib
 {
@@ -175,12 +176,17 @@ namespace ze_lib
         bool debugTraceEnabled = false;
         bool dynamicTracingSupported = true;
         ze_pfnDriverGet_t loaderDriverGet = nullptr;
+        #ifdef DYNAMIC_LOAD_LOADER
+        zel_version_t dynamicLoaderVersion = {};
+        #endif
     };
 
     extern bool destruction;
     extern context_t *context;
     #ifdef DYNAMIC_LOAD_LOADER
     extern bool delayContextDestruction;
+    #elif defined(_WIN32)
+    void context_dynamic_at_exit_destructor();
     #endif
 
 } // namespace ze_lib

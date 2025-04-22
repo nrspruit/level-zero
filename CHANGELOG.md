@@ -1,5 +1,8 @@
 # Level zero loader changelog
 
+## v1.21.10
+* Delay loader context destroy with the dynamic loader until after dll detach.
+* Only run teardown check thread on windows
 ## v1.21.9
 * Fix init checks when sorting legacy drivers
 * Fix MSVC Link optimization flags
